@@ -1,0 +1,17 @@
+# Virtual environment
+venv/
+.env/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# JSON data files
+*.json
+
+# Environment variables
+.env
+
+# OS junk
+.DS_Store
