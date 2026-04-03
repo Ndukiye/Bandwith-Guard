@@ -2,85 +2,45 @@ import psutil
 import time
 from datetime import date, timedelta
 from storage import update_storage,get_bandwith_data,get_presets
-from config import user_presets
-connected_process_pid = []
+
 
 def check_cap(total_mb):
     presets = get_presets()
+    if not presets:
+        return False
+    
     cap = presets[0]["usage_limits"]
-    if total_mb >= cap:
-        # print("Data Usage has reached Limit !!")
-        return True
-    # elif total_mb >= (80/100)*cap :
-        # print("Data Usage nearing limit.")
+    if total_mb >= cap: return True
     return False
 
-def save_bandwith_data(total_mb,cap_reached):
+def save_bandwith_data(total_mb,cap_reached,speed):
     current_date =  str(date.today())
     old_data = get_bandwith_data()
     if old_data != []:
-        last_entry = old_data[len(old_data)-1]    
+        last_entry = old_data[-1]    
         if  last_entry["date"] == current_date:
-            last_entry["total_mb"] = total_mb
+            last_entry["total_mb"] = float(f'{total_mb:.2f}')
             last_entry["usage_limit"] = cap_reached
+            last_entry["speed_mbps"] = float(f'{speed:.2f}')
             update_storage(old_data)
         else:
-            new_data = {"date":current_date,"total_mb": total_mb,"usage_limit":cap_reached}
+            new_data = {"date":current_date,"total_mb": float(f'{total_mb:.2f}'),"usage_limit":cap_reached,"speed_mbps":float(f'{speed:.2f}')}
             old_data.append(new_data)
             update_storage(old_data)
     else:
-        new_data = {"date":current_date,"total_mb": total_mb,"usage_limit":cap_reached}
+        new_data = {"date":current_date,"total_mb": float(f'{total_mb:.2f}'),"usage_limit":cap_reached,"speed_mbps":float(f'{speed:.2f}')}
         old_data.append(new_data)
         update_storage(old_data)
 
-def track_data_usage():
-    total_bytes = 0
-    total_mb = 0
-    while True: 
+
+total_bytes = 0
+total_mb = 0
+while True: 
         old = psutil.net_io_counters().bytes_recv
         time.sleep(1)
         new = psutil.net_io_counters().bytes_recv
+        speed_mbps = (new-old)/1048576
         total_bytes+=(new-old)
         total_mb = total_bytes/1048576
-        save_bandwith_data(total_mb,check_cap(total_mb))
-        print(f'Used in last second: {total_bytes} bytes | Total today: {total_mb:.2f} MB')
-
-
-while True:
-    user_input = input("\nBandwith Guardian - 1\nEdit Config - 2\nClose - 3\n")
-    match user_input:
-        case "1":
-    #    print(f'Used in last second: {total_bytes} bytes | Total today: {total_mb:.2f} MB')
-            track_data_usage()
-        case "2":
-            user_presets()
-        case "3":
-            break
-
-
-
-
-
-
-# def check_date():
-#     saved_date = date.today()
-#     print(saved_date)
-#     print(date.today() > saved_date)
-
-# check_date()
-
-# print(psutil.Process())
-# print(psutil.net_connections())
-
-# for proc in psutil.process_iter(['pid', 'name', 'username']):
-#     print(proc.info)
-
-# all_connections = psutil.net_connections()
-# for connection in all_connections:
-#     if connection.status == "ESTABLISHED":
-#             connected_process_pid.append(connection.pid)
-
-# for id in connected_process_pid:
-#     if id is not None: 
-#         print(psutil.Process(id))
-
+        save_bandwith_data(total_mb,check_cap(total_mb),speed_mbps)
+        # print(f'Used in last second: {total_bytes} bytes | Total today: {total_mb:.2f} MB')

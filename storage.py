@@ -7,7 +7,7 @@ for path in paths:
     try:
         with open(path, "r") as file:
             data = json.load(file)
-    except FileNotFoundError or None:
+    except FileNotFoundError:
         with open(path, "w") as file:
             data =[]
             json.dump(data,file)

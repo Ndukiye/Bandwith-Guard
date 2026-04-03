@@ -1,0 +1,13 @@
+[Unit]
+Description=Bandwidth Guardian - Network Usage Monitor
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /home/ndukiye/Documents/Workspace/Python-work/Bandwith-Guard/monitor.py
+WorkingDirectory=/home/ndukiye/Documents/Workspace/Python-work/Bandwith-Guard
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
