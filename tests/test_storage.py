@@ -83,6 +83,8 @@ def test_cleanup_old_history(mocker):
     }}
     mocker.patch('src.storage.load_history',return_value=mock_data)
     mock_save_history = mocker.patch('src.storage.save_history')
+    mock_date = mocker.patch('src.storage.date')
+    mock_date.today.return_value = date(2026, 5, 18)
     cleanup_old_history(1)
     mock_save_history.assert_called_once_with({    
     "2026-05-17": {
